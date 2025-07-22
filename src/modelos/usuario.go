@@ -4,6 +4,9 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
+	"github.com/paulo-fabiano/apiDevBook/src/seguranca"
 )
 
 type Usuario struct {
@@ -22,7 +25,10 @@ func (usuario *Usuario) PrepararUsuario(etapa string) error {
 		return err
 	}
 
-	usuario.formatar()
+	if err := usuario.formatar(etapa); err != nil {
+		return err
+	}
+
 	return nil
 
 }
@@ -41,6 +47,11 @@ func (usuario *Usuario) validar(etapa string) error {
 		return errors.New("Campo Email é obrigátório e está vazio")
 	}
 
+	err := checkmail.ValidateFormat(usuario.Email)
+	if err != nil {
+		return errors.New("O email inserido é inválido")
+	}
+
 	if etapa == "cadastro" && usuario.Senha == "" {
 		return errors.New("Campo Senha é obrigatória e está em branco")
 	}
@@ -49,10 +60,21 @@ func (usuario *Usuario) validar(etapa string) error {
 
 }
 
-func (usuario *Usuario) formatar() {
+func (usuario *Usuario) formatar(etapa string) error {
 
 	usuario.Nome = strings.TrimSpace(usuario.Nome)
 	usuario.Nick = strings.TrimSpace(usuario.Nick)
 	usuario.Email = strings.TrimSpace(usuario.Email)
+
+	if etapa == "cadastro" {
+		senhaComHash, err := seguranca.Hash(usuario.Senha)
+		if err != nil {
+			return err
+		}
+
+		usuario.Senha = string(senhaComHash)
+	}
+
+	return nil
 	
 }

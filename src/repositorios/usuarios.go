@@ -139,3 +139,25 @@ func (repo Usuarios) Deletar(ID uint64) error {
 
 	return nil
 }
+
+// BuscarPorEmail faz uma busca por email e retorna o objeto, se houver
+func (repo Usuarios) BuscarPorEmail(email string) (modelos.Usuario, error) {
+
+	linha, err := repo.db.Query("select id, senha from usuarios where email = ?", email)
+	if err != nil {
+		return modelos.Usuario{}, err
+	}
+	defer linha.Close()
+
+	var usuario modelos.Usuario
+
+	for linha.Next() {
+		err := linha.Scan(&usuario.ID, &usuario.Senha)
+		if err != nil {
+			return modelos.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
+
+}

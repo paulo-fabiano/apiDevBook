@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/paulo-fabiano/apiDevBook/src/autenticacao"
 	"github.com/paulo-fabiano/apiDevBook/src/banco"
 	"github.com/paulo-fabiano/apiDevBook/src/modelos"
 	"github.com/paulo-fabiano/apiDevBook/src/repositorios"
@@ -52,9 +53,9 @@ func CriarUsuario(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	respostas.JSON(writer, http.StatusCreated, struct{
-		Mensagem string `json:"mensagem"`
+		Data interface{} `json:"mensagem"`
 	}{
-		Mensagem: fmt.Sprintf("ID %d inserido com sucesso", usuario.ID),
+		Data: usuario,
 	})
 
 }
@@ -122,6 +123,19 @@ func AtualizarUsuario(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		respostas.Erro(writer, http.StatusBadRequest, err)
 		return		
+	}
+
+	usuarioIDNoToken, err := autenticacao.ExtrairUsuarioID(request)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return	
+	}
+
+	// Se o ID do usuario for diferente do ID do token então o usuário não consegue fazer uma atualização dos seus dados
+	// então, um usuário não pode alterar as informações do outro
+	if usuarioID != usuarioIDNoToken {
+		respostas.Erro(writer, http.StatusForbidden, errors.New("Você não pode atualizar outros usuários"))
+		return			
 	}
 
 	corpoRequest, err := ioutil.ReadAll(request.Body)

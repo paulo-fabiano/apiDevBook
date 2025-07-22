@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/paulo-fabiano/apiDevBook/src/middlewares"
 )
 
 type Rota struct {
@@ -16,10 +17,18 @@ type Rota struct {
 func Configurar(r *mux.Router) *mux.Router {
 
 	rotas := RotasUsuarios
+	rotas = append(rotas, rotaLogin)
 
 	for _, rota := range rotas {
-		r.HandleFunc(rota.URI, rota.Funcao).Methods(rota.Metodo)
+
+		if rota.RequerAutenticacao { // Se for true
+			r.HandleFunc(rota.URI, middlewares.Logger(middlewares.Autenticar(rota.Funcao))).Methods(rota.Metodo)
+		} else {
+			r.HandleFunc(rota.URI, middlewares.Logger(rota.Funcao)).Methods(rota.Metodo)
+		}
+
 	}
 
 	return r
+	
 }
