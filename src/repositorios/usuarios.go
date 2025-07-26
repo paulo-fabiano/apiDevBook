@@ -250,7 +250,7 @@ func (repo Usuarios) BuscarSenha(usuarioID uint64) (string, error) {
 
 	linha, err := repo.db.Query(`
 		select senha from usuarios where id = ?
-	`)
+	`, usuarioID)
 	if err != nil {
 		return "", err
 	}
