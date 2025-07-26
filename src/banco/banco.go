@@ -6,6 +6,7 @@ import (
 	"github.com/paulo-fabiano/apiDevBook/src/config"
 )
 
+// Conectar retorna um ponteiro de sql*DB ou um error
 func Conectar() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", config.StringConexaoBanco)

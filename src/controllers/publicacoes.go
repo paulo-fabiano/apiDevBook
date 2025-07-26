@@ -170,9 +170,48 @@ func AtualizarPublicacao(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	respostas.JSON(writer, http.StatusNoContent, nil)
-	
+
 }
 
 func DeletarPublicacao(writer http.ResponseWriter, request *http.Request) {
 	
+	usuarioID, err := autenticacao.ExtrairUsuarioID(request)
+	if err != nil {
+		respostas.Erro(writer, http.StatusUnauthorized, err)
+		return
+	}
+
+	parametros := mux.Vars(request)
+	publicacaoID, err := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositoriosDePublicacoes(db)
+	publicacaoSalvaNoBanco, err := repositorio.BuscarPorID(publicacaoID)
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return	
+	}
+
+	if publicacaoSalvaNoBanco.AutorID != usuarioID {
+		respostas.Erro(writer, http.StatusForbidden, errors.New("não é possível apagar uma publicação que não seja sua"))
+		return
+	}
+
+	if err := repositorio.Deletar(); err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(writer, http.StatusNoContent, nil)
+
 }
