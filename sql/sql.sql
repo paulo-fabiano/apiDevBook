@@ -11,3 +11,17 @@ CREATE TABLE usuarios (
     senha varchar(200) not null,
     criado_em timestamp default current_timestamp()
 ) ENGINE=INNODB;
+
+CREATE TABLE seguidores (
+    usuario_id int not null,
+    FOREIGN KEY (usuario_id)
+    REFERENCES usuarios(id)
+    ON DELETE CASCADE,
+
+    seguidor_id int not null,
+    FOREIGN KEY (seguidor_id)
+    REFERENCES usuarios(id)
+    ON DELETE CASCADE,
+
+    primary key(usuario_id, seguidor_id)
+) ENGINE=INNODB;
