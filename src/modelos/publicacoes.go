@@ -8,9 +8,9 @@ import (
 
 // Publicacao representa uma publicação feita por um usuário
 type Publicacao struct {
-	ID uint64 `json:"id,omitempyt"`
-	Titulo string `json:"titulo,omitempyt"`
-	Conteudo string `conteudo,omitempty`
+	ID uint64 `json:"id,omitempty"`
+	Titulo string `json:"titulo,omitempty"`
+	Conteudo string `json:"conteudo,omitempty"`
 	AutorID uint64 `json:"autorId,omitempty"`
 	AutorNick string `json:"autorNick,omitempty"`
 	Curtidas uint64 `json:"curtidas"`
@@ -31,10 +31,10 @@ func (publicacao *Publicacao) Preparar() error {
 func (publicacao *Publicacao) validar() error {
 
 	if publicacao.Titulo == "" {
-		return errors.New("O título é obrigatório e não pode estar em branco")
+		return errors.New("o título é obrigatório e não pode estar em branco")
 	}
 	if publicacao.Conteudo == "" {
-		return errors.New("O contéudo é obrigatório e não pode estar em branco")	
+		return errors.New("o contéudo é obrigatório e não pode estar em branco")	
 	}
 
 	return nil

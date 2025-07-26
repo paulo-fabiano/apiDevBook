@@ -88,6 +88,28 @@ func BuscarPublicacao(writer http.ResponseWriter, request *http.Request) {
 
 func BuscarPublicacoes(writer http.ResponseWriter, request *http.Request) {
 	
+	usuarioID, err := autenticacao.ExtrairUsuarioID(request)
+	if err != nil {
+		respostas.Erro(writer, http.StatusUnauthorized, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositoriosDePublicacoes(db)
+	publicacoes, err := repositorio.Buscar(usuarioID)
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(writer, http.StatusOK, publicacoes)
+	
 }
 
 func AtualizarPublicacao(writer http.ResponseWriter, request *http.Request) {

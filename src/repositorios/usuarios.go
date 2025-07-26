@@ -109,10 +109,10 @@ func (repo Usuarios) BuscarPorID(ID uint64) (modelos.Usuario, error) {
 func (repo Usuarios) Atualizar(ID uint64, usuario modelos.Usuario) error {
 
 	stmt, err := repo.db.Prepare("update usuarios set nome = ?, nick = ?, email = ? where id = ?")
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(usuario.Nome, usuario.Nick, usuario.Email, ID)
 	if err != nil {
