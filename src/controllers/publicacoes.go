@@ -207,11 +207,38 @@ func DeletarPublicacao(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := repositorio.Deletar(); err != nil {
+	if err := repositorio.Deletar(publicacaoID); err != nil {
 		respostas.Erro(writer, http.StatusInternalServerError, err)
 		return
 	}
 
 	respostas.JSON(writer, http.StatusNoContent, nil)
+
+}
+
+func BuscarPublicacoesPorUsuario(writer http.ResponseWriter, request *http.Request) {
+
+	parametros := mux.Vars(request)
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositoriosDePublicacoes(db)
+	publicacoes, err := repositorio.BuscarPorUsuario(usuarioID)
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(writer, http.StatusOK, publicacoes)
 
 }
