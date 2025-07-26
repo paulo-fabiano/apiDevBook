@@ -109,3 +109,21 @@ func (repo Publicacoes) Buscar(usurioID uint64) ([]modelos.Publicacao, error) {
 	return publicacoes, nil
 
 }
+
+func (repo Publicacoes) Atualizar(publicacaoID uint64, publicacao modelos.Publicacao) error {
+
+	stmt, err := repo.db.Prepare(`
+		update publicacoes set titulo = ?, conteudo = ?, where id = ?
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(publicacao.Titulo, publicacao.Conteudo, publicacaoID); err != nil {
+		return err
+	}
+
+	return nil
+	
+}

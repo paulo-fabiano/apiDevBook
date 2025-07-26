@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -109,10 +110,66 @@ func BuscarPublicacoes(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	respostas.JSON(writer, http.StatusOK, publicacoes)
-	
+
 }
 
 func AtualizarPublicacao(writer http.ResponseWriter, request *http.Request) {
+	
+	usuarioID, err := autenticacao.ExtrairUsuarioID(request)
+	if err != nil {
+		respostas.Erro(writer, http.StatusUnauthorized, err)
+		return
+	}
+
+	parametros := mux.Vars(request)
+	publicacaoID, err := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositoriosDePublicacoes(db)
+	publicacaoSalvaNoBanco, err := repositorio.BuscarPorID(publicacaoID)
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return	
+	}
+
+	if publicacaoSalvaNoBanco.AutorID != usuarioID {
+		respostas.Erro(writer, http.StatusForbidden, errors.New("não é possível atualizar uma publicação que não seja sua"))
+		return
+	}
+
+	corpoRequest, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	var publicacao modelos.Publicacao
+	if err := json.Unmarshal(corpoRequest, &publicacao); err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return	
+	}
+
+	if err := publicacao.Preparar(); err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := repositorio.Atualizar(publicacaoID, publicacao); err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return		
+	}
+
+	respostas.JSON(writer, http.StatusNoContent, nil)
 	
 }
 
