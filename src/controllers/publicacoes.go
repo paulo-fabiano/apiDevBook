@@ -269,3 +269,32 @@ func CurtirPublicacao(writer http.ResponseWriter, request *http.Request) {
 	respostas.JSON(writer, http.StatusNoContent, nil)
 
 }
+
+func DescurtirPublicacao(writer http.ResponseWriter, request *http.Request) {
+
+	parametros := mux.Vars(request)
+	publicacaoID, err := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
+	if err != nil {
+		respostas.Erro(writer, http.StatusBadRequest, err)
+		return
+	}
+
+	db, err := banco.Conectar()
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositoriosDePublicacoes(db)
+	err = repositorio.Descurtir(publicacaoID)
+	if err != nil {
+		respostas.Erro(writer, http.StatusInternalServerError, err)
+		return
+	}
+
+	respostas.JSON(writer, http.StatusNoContent, nil)
+
+}
+
+

@@ -186,8 +186,30 @@ func (repo Publicacoes) BuscarPorUsuario(usuarioID uint64) ([]modelos.Publicacao
 func (repo Publicacoes) Curtir(publicacaoID uint64) error {
 
 	stmt, err := repo.db.Prepare(`
-		uṕdate publicacoes set curtidas = curtidas + 1
+		update publicacoes set curtidas = curtidas + 1
 		where id = ?
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err := stmt.Exec(publicacaoID); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (repo Publicacoes) Descurtir(publicacaoID uint64) error {
+
+	stmt, err := repo.db.Prepare(`
+		update publicacoes set curtidas =
+		CASE 
+			WHEN curtidas > 0 THEN curtidas - 1
+			ELSE 0 
+		END where id = ?
 	`)
 	if err != nil {
 		return err
