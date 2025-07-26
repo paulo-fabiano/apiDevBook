@@ -18,6 +18,7 @@ func Configurar(r *mux.Router) *mux.Router {
 
 	rotas := RotasUsuarios
 	rotas = append(rotas, rotaLogin)
+	rotas = append(rotas, rotasPublicacoes...) // ... quer dizer que ele tem que dar um append para cada tipo do slice de rotasPublicacoes
 
 	for _, rota := range rotas {
 
