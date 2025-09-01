@@ -7,7 +7,7 @@ import (
 
 	"github.com/paulo-fabiano/apiDevBook/src/router"
 	"github.com/paulo-fabiano/apiDevBook/src/router/rotas"
-	"github.com/paulo-fabiano/apiDevBook/utils"
+	"github.com/paulo-fabiano/apiDevBook/src/utils"
 )
 
 func main() {
